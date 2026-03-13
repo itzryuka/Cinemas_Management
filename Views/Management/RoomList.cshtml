@@ -1,0 +1,104 @@
+﻿@model IEnumerable<BAO_Cinemas.Models.Room>
+
+@{
+    // Lấy thông tin Rạp từ Controller gửi sang để làm tiêu đề
+    var cinema = ViewBag.CinemaInfo as BAO_Cinemas.Models.Cinema;
+    ViewData["Title"] = $"Danh sách Phòng - {cinema?.Name}";
+}
+
+<div class="container-fluid bg-dark text-white p-4 mt-4 rounded shadow">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="fw-bold text-color m-0">
+            <i class="bi bi-door-open-fill"></i> Quản lý Phòng: <span class="text-info">@cinema?.Name</span>
+        </h2>
+
+        <div>
+            <a asp-action="Cinema" class="btn btn-outline-light me-2">
+                <i class="bi bi-arrow-left"></i> Về danh sách Rạp
+            </a>
+            <a asp-action="CreateRoom" asp-route-cinemaId="@cinema?.Id" class="btn btn-light fw-bold text-dark">
+                <i class="bi bi-plus-lg"></i> Thêm Phòng Mới
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show fw-bold" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show fw-bold" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover table-bordered align-middle text-center">
+            <thead class="table-secondary text-dark">
+                <tr>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 25%;">Tên Phòng</th>
+                    <th style="width: 15%;">Số lượng ghế</th>
+                    <th style="width: 25%;">Trạng thái</th>
+                    <th style="width: 15%;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-secondary">@item.Id</td>
+                            <td class="text-start fw-bold text-info fs-5">@item.Name</td>
+                            <td>@item.TotalSeats ghế</td>
+
+                            <td>
+                                @if (item.Status == 1)
+                                {
+                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle"></i> Đang hoạt động</span>
+                                }
+                                else if (item.Status == 2)
+                                {
+                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-tools"></i> Đang bảo trì</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle"></i> Dừng hoạt động</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="EditRoom" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Sửa phòng">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <a asp-action="DeleteRoom" asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa phòng này? Toàn bộ lịch chiếu của phòng sẽ bị ảnh hưởng!');"
+                                       title="Xóa phòng">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-secondary py-5">
+                            <i class="bi bi-door-closed fs-1 d-block mb-2"></i>
+                            Rạp này hiện chưa có phòng chiếu nào. Hãy tạo phòng mới!
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+﻿@model IEnumerable<BAO_Cinemas.Models.Cinema>
+
+@{
+    ViewData["Title"] = "Quản lý Rạp";
+}
+
+<div class="container-fluid bg-dark text-white p-4 mt-4 rounded shadow">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="fw-bold text-color m-0">
+            <i class="bi bi-geo-alt-fill"></i> Quản lý Rạp
+        </h2>
+
+        <div>
+            <a asp-action="CreateCinema" class="btn btn-light fw-bold text-dark">
+                <i class="bi bi-plus-lg"></i> Thêm Rạp Mới
+            </a>
+            <a href="/" class="btn btn-outline-light">
+                <i class="bi bi-arrow-return-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show fw-bold" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show fw-bold" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover table-bordered align-middle text-center">
+            <thead class="table-secondary text-dark">
+                <tr>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 25%;">Tên Rạp</th>
+                    <th style="width: 40%;">Địa chỉ</th>
+                    <th style="width: 15%;">Hotline</th>
+                    <th style="width: 15%;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-secondary">@item.Id</td>
+
+                            <td class="text-start fw-bold">
+                                <a asp-action="RoomList" asp-route-cinemaId="@item.Id" class="text-info text-decoration-none fs-5">
+                                    @item.Name
+                                </a>
+                                <br>
+                                <small class="text-secondary fw-normal"><i class="bi bi-door-open"></i> Bấm để xem các phòng</small>
+                            </td>
+
+                            <td class="text-start">@item.Address</td>
+                            <td class="fw-bold text-warning">@item.Hotline</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="EditCinema" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Sửa rạp">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <a asp-action="DeleteCinema" asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa rạp này?');"
+                                       title="Xóa rạp">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-secondary py-5">
+                            <i class="bi bi-buildings fs-1 d-block mb-2"></i>
+                            Chưa có dữ liệu rạp phim. Hãy thêm rạp đầu tiên!
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

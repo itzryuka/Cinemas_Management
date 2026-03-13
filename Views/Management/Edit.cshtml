@@ -1,0 +1,89 @@
+﻿@model BAO_Cinemas.Models.Movie
+
+@{
+    ViewData["Title"] = "Sửa Thông Tin Phim";
+}
+
+<div class="container bg-dark text-white p-4 mt-4 rounded shadow" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="fw-bold text-info m-0">Sửa Phim: @Model.Title</h2>
+        <a asp-action="Movie" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Quay lại Kho
+        </a>
+    </div>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <input type="hidden" asp-for="Id" />
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Title" class="form-label fw-bold">Tên phim <span class="text-danger">*</span></label>
+                <input asp-for="Title" class="form-control bg-secondary text-white border-0" required />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Genre" class="form-label fw-bold">Thể loại</label>
+                <input asp-for="Genre" class="form-control bg-secondary text-white border-0" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Duration" class="form-label fw-bold">Thời lượng (Phút) <span class="text-danger">*</span></label>
+                <input asp-for="Duration" type="number" class="form-control bg-secondary text-white border-0" required />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="ReleaseDate" class="form-label fw-bold">Ngày khởi chiếu <span class="text-danger">*</span></label>
+                <input asp-for="ReleaseDate" type="text" value="@Model.ReleaseDate.ToString("yyyy-MM-dd")" class="form-control bg-secondary text-white border-0 flatpickr-date" placeholder="Chọn ngày..." required />
+                <span asp-validation-for="ReleaseDate" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12 mb-3">
+                <label asp-for="PosterUrl" class="form-label fw-bold">Đường dẫn Poster</label>
+                <input type="file" name="PosterFile" class="form-control bg-secondary text-white border-0" accept="image/*" />
+            </div>
+
+            <div class="col-12 mb-4">
+                <label asp-for="CategoryId" class="form-label fw-bold">Phân loại hiển thị (Trang chủ) <span class="text-danger">*</span></label>
+                <select asp-for="CategoryId" class="form-select bg-secondary text-white border-0">
+                    <option value="1">1 - Đang chiếu (Now Showing)</option>
+                    <option value="2">2 - Sắp chiếu (Coming Soon)</option>
+                    <option value="3">3 - Chiếu rạp IMAX</option>
+                    <option value="0">0 - Ẩn (Chỉ lưu trong Kho)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="text-end border-top border-secondary pt-3">
+            <button type="submit" class="btn btn-info fw-bold px-4 py-2 text-dark">
+                <i class="bi bi-check-circle"></i> Cập nhật Phim
+            </button>
+        </div>
+    </form>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo lịch, tự động lấy ngày trong ô input làm mặc định
+            $(".flatpickr-date").flatpickr({
+                locale: "vn",           // Tiếng Việt
+                dateFormat: "Y-m-d",    // Định dạng gửi về DB
+                altInput: true,         // Giao diện thân thiện
+                altFormat: "d/m/Y",     // Hiển thị dạng Ngày/Tháng/Năm
+                allowInput: true        // Cho phép gõ phím
+            });
+        });
+    </script>
+}

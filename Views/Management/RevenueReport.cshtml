@@ -1,0 +1,147 @@
+﻿@{
+    ViewData["Title"] = "Thống Kê Doanh Thu";
+    var movieTable = ViewBag.MovieTable as List<BAO_Cinemas.Controllers.MovieRevVM>;
+    var dateTable = ViewBag.DateTable as List<BAO_Cinemas.Controllers.DailyRevVM>;
+}
+
+<div class="container-fluid mt-4 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="text-warning fw-bold mb-0"><i class="bi bi-bar-chart-fill"></i> DOANH THU</h2>
+
+        <form method="get" asp-action="RevenueReport" class="d-flex align-items-center gap-2">
+            <label class="text-light fw-bold text-nowrap">Chọn tháng:</label>
+            <input type="month" name="selectedMonth" value="@ViewBag.SelectedMonth" class="form-control bg-dark text-white border-secondary" onchange="this.form.submit()" />
+        </form>
+
+        <h3 class="text-success fw-bold mb-0">Tổng: @ViewBag.TotalRevenue.ToString("N0") đ</h3>
+    </div>
+
+    @if (movieTable == null || movieTable.Count == 0)
+    {
+        <div class="alert alert-warning text-center fw-bold">
+            Không có dữ liệu doanh thu nào trong tháng @ViewBag.SelectedMonth!
+        </div>
+    }
+    else
+    {
+        <div class="row">
+
+            <div class="col-md-6 mb-4">
+                <div class="card bg-dark border-secondary shadow mb-3">
+                    <div class="card-header border-secondary">
+                        <h5 class="text-info fw-bold mb-0">DOANH THU THEO PHIM</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="movieChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover table-bordered text-center align-middle">
+                        <thead class="table-info text-dark">
+                            <tr>
+                                <th class="text-start">Tên Phim</th>
+                                <th>Số vé bán</th>
+                                <th>Doanh Thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in movieTable)
+                            {
+                                <tr>
+                                    <td class="text-start text-info fw-bold">@item.MovieName</td>
+                                    <td>@item.TicketsSold vé</td>
+                                    <td class="text-success fw-bold">@item.Revenue.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card bg-dark border-secondary shadow mb-3">
+                    <div class="card-header border-secondary">
+                        <h5 class="text-danger fw-bold mb-0">BIẾN ĐỘNG THEO NGÀY</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dateChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover table-bordered text-center align-middle">
+                        <thead class="table-danger text-dark">
+                            <tr>
+                                <th class="text-start">Ngày ghi nhận</th>
+                                <th>Doanh Thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in dateTable)
+                            {
+                                <tr>
+                                    <td class="text-start text-light">@item.DateString</td>
+                                    <td class="text-success fw-bold">@item.Revenue.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Chỉ vẽ biểu đồ nếu có dữ liệu
+        const movieLabelsCheck = @Html.Raw(ViewBag.MovieLabels ?? "[]");
+
+        if (movieLabelsCheck.length > 0) {
+
+            const movieLabels = @Html.Raw(ViewBag.MovieLabels);
+            const movieData = @Html.Raw(ViewBag.MovieData);
+            const dateLabels = @Html.Raw(ViewBag.DateLabels);
+            const dateData = @Html.Raw(ViewBag.DateData);
+
+            // Biểu đồ theo phim
+            new Chart(document.getElementById('movieChart'), {
+                type: 'bar',
+                data: {
+                    labels: movieLabels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: movieData,
+                        backgroundColor: 'rgba(13, 202, 240, 0.7)',
+                        borderColor: 'rgba(13, 202, 240, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+
+            // Biểu đồ theo ngày (Đổi thành Line - dạng đường kẻ cho đẹp)
+            new Chart(document.getElementById('dateChart'), {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: dateData,
+                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3 // Làm cong đường kẻ
+                    }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+        }
+    });
+</script>

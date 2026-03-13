@@ -1,0 +1,227 @@
+﻿@model BAO_Cinemas.Models.Showtime
+
+@{
+    ViewData["Title"] = "Chọn Ghế - " + Model.Movie.Title;
+    var bookedSeats = Model.BookedSeats?.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+    var rows = new[] { "A", "B", "C", "D", "E", "F", "G" };
+}
+
+<style>
+    body {
+        background-color: #141414;
+        color: white;
+    }
+
+    .screen {
+        background: linear-gradient(to bottom, #ddd, #141414);
+        height: 60px;
+        width: 80%;
+        margin: 0 auto 50px;
+        border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+        box-shadow: 0 15px 30px rgba(255,255,255,0.15);
+        text-align: center;
+        color: #888;
+        line-height: 60px;
+        font-weight: bold;
+        letter-spacing: 5px;
+    }
+
+    .seat {
+        width: 35px;
+        height: 35px;
+        margin: 4px;
+        border-radius: 5px 5px 12px 12px;
+        cursor: pointer;
+        background-color: #444;
+        color: white;
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+        border: 1px solid #222;
+    }
+
+        .seat.available:hover {
+            transform: scale(1.1);      
+        }
+
+        .seat.selected {
+            background-color: #dc3545;
+        }
+
+        .seat.booked {
+            background-color: #1a1a1a;
+            color: #333;
+            cursor: not-allowed;
+            border-color: #111;
+        }
+
+    .seat-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .row-label {
+        width: 30px;
+        text-align: center;
+        font-weight: bold;
+        color: #ccc;
+        margin-right: 15px;
+    }
+
+    .legend-seat {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        border-radius: 3px;
+        margin-right: 5px;
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="text-white mb-0">CHỌN GHẾ</h2>
+        <a href="javascript:history.back()" class="btn btn-outline-light px-4">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <img src="@Model.Movie.PosterUrl" class="w-100 rounded mb-3 shadow" />
+            <h5 class="fw-bold text-warning text-uppercase">@Model.Movie.Title</h5>
+            <p class="mb-1 text-light"><i class="bi bi-geo-alt"></i> @Model.Cinema.Name</p>
+            <p class="mb-1 text-light"><i class="bi bi-door-open"></i> @Model.Room.Name</p>
+            <p class="mb-1 text-light"><i class="bi bi-calendar3"></i> @Model.StartTime.ToString("dd/MM/yyyy - HH:mm")</p>
+            <h6 class="mt-3 text-secondary">Giá vé: @Model.Price.ToString("N0") VNĐ / Ghế</h6>
+         
+            <div id="checkoutBox" class="bg-dark p-3 rounded shadow mt-4 border border-danger d-none">
+                <h5 class="text-white border-bottom border-secondary pb-2 mb-3">Hóa Đơn</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-light">Ghế chọn:</span>
+                    <span id="selectedSeatsText" class="fw-bold text-warning">...</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-light">Tổng tiền:</span>
+                    <span id="totalPriceText" class="fw-bold text-danger fs-5">0 VNĐ</span>
+                </div>
+
+                <button type="button" class="btn btn-danger w-100 fw-bold fs-5 py-2" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                    Tiếp Tục
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="bg-dark p-4 rounded shadow">
+                <div class="screen">MÀN HÌNH</div>
+
+                <div class="seat-map mb-5">
+                    @foreach (var row in rows)
+                    {
+                        <div class="seat-row">
+                            <div class="row-label">@row</div>
+                            @for (int col = 1; col <= 14; col++)
+                            {
+                                var seatName = $"{row}{col}";
+                                var isBooked = bookedSeats.Contains(seatName);
+                                var seatClass = isBooked ? "seat booked" : "seat available";
+
+                                <div class="@seatClass" data-seat="@seatName" title="Ghế @seatName">
+                                    @col
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-center gap-4 border-top border-secondary pt-4 mt-2">
+                    <div class="d-flex align-items-center"><span class="legend-seat" style="background-color: #444;"></span> Trống</div>
+                    <div class="d-flex align-items-center"><span class="legend-seat" style="background-color: #dc3545;"></span> Đang chọn</div>
+                    <div class="d-flex align-items-center"><span class="legend-seat" style="background-color: #1a1a1a; border: 1px solid #333;"></span> Đã bán</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-danger">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-warning fw-bold">XÁC NHẬN THANH TOÁN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="ConfirmBooking" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="showtimeId" value="@Model.Id" />
+                    <input type="hidden" id="modalHiddenSeats" name="selectedSeats" />
+
+                    <div class="p-3 mb-3 rounded" style="background: #222;">
+                        <p class="mb-1 text-secondary small">Phim: <strong class="text-white">@Model.Movie.Title</strong></p>
+                        <p class="mb-1 text-secondary small">Ghế: <strong id="modalSeatDisplay" class="text-warning"></strong></p>
+                        <p class="mb-0 text-secondary small">Tổng tiền: <strong id="modalPriceDisplay" class="text-danger"></strong></p>
+                    </div>
+
+                    <p class="text-center text-secondary small mt-3 mb-0">Hệ thống sẽ dùng tài khoản <strong class="text-info">@User.Identity.Name</strong> để ghi nhận vé này.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">CHẮC CHẮN ĐẶT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const pricePerSeat = @Model.Price;
+        const seats = document.querySelectorAll('.seat.available');
+        const checkoutBox = document.getElementById('checkoutBox');
+        const selectedSeatsText = document.getElementById('selectedSeatsText');
+        const totalPriceText = document.getElementById('totalPriceText');
+        
+        // Các phần tử trong Modal
+        const modalHiddenSeats = document.getElementById('modalHiddenSeats');
+        const modalSeatDisplay = document.getElementById('modalSeatDisplay');
+        const modalPriceDisplay = document.getElementById('modalPriceDisplay');
+
+        seats.forEach(seat => {
+            seat.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                updateCheckout();
+            });
+        });
+
+        function updateCheckout() {
+            const selectedSeats = document.querySelectorAll('.seat.selected');
+            const seatsArray = Array.from(selectedSeats).map(s => s.getAttribute('data-seat'));
+
+            if (seatsArray.length > 0) {
+                // 1. Hiện khung hóa đơn và nút xác nhận
+                checkoutBox.classList.remove('d-none');
+
+                // 2. Tính toán con số
+                const total = seatsArray.length * pricePerSeat;
+                const formattedTotal = new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ';
+                const seatNames = seatsArray.join(', ');
+
+                // 3. Cập nhật giao diện bên ngoài
+                selectedSeatsText.textContent = seatNames;
+                totalPriceText.textContent = formattedTotal;
+
+                // 4. Cập nhật dữ liệu vào Modal (để khi hiện lên có sẵn thông tin)
+                if(modalHiddenSeats) modalHiddenSeats.value = seatsArray.join(',');
+                if(modalSeatDisplay) modalSeatDisplay.textContent = seatNames;
+                if(modalPriceDisplay) modalPriceDisplay.textContent = formattedTotal;
+            } else {
+                // Giấu đi nếu không chọn ghế nào
+                checkoutBox.classList.add('d-none');
+            }
+        }
+    });
+</script>

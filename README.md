@@ -42,4 +42,8 @@ Update-Database
 
 B4: Ấn F5 hoặc bấm nút Play màu xanh ở thanh công cụ
 
+Trong data seeding có tạo sẵn 1 tài khoản Admin để mở khóa các chức năng quản lý
 
+Email: admin@baocinemas.com
+
+Pass: Admin@123

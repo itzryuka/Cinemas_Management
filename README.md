@@ -22,12 +22,17 @@ Chọn Manage Nuget Packages for Solution
 
 
 B1: Sau khi xong chọn file Models\ApplicationDbContext.cs
-Trong đó có Seeding Data (Dữ liệu mẫu) để khi chạy trương trình có thể hiển thị được các tài nguyên của trương trình
-B2: Chọn phần Tool -> Nuget Package Manager -> Package Manager Console
-B3: Viết và Enter lần lượt 2 hàm này để tạo Database
-Add-Migration ActiveSeedData
-Update-Database
-B4: Ấn F5 hoặc bấm nút Play màu xanh ở thanh công cụ
 
+Trong đó có Seeding Data (Dữ liệu mẫu) để khi chạy trương trình có thể hiển thị được các tài nguyên của trương trình
+
+B2: Chọn phần Tool -> Nuget Package Manager -> Package Manager Console
+
+B3: Viết và Enter lần lượt 2 hàm này để tạo Database
+
+Add-Migration ActiveSeedData
+
+Update-Database
+
+B4: Ấn F5 hoặc bấm nút Play màu xanh ở thanh công cụ
 
 Vì nhiều thứ vẫn chưa rõ mong mn có thể để lại góp ý ạ

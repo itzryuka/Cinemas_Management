@@ -1,11 +1,16 @@
 Project mang chủ để về quản lý rạp phim
+
 Được thực hiện 100% trên Visual Studio 2022 (.Net 9.0 hoặc hơn)
 
 
 Có 1 vài vấn đề lưu ý:
+
 1, Cần phải có SQL Server Management Studio (2022 hoặc hơn)
+
 2, Có cài những Nuget - Solution (Packages for Solution)
+
 Ở đây mình sử dụng .NET 9.0 nên tải phiên bản 9.0.14
+
 <img width="1163" height="98" alt="image" src="https://github.com/user-attachments/assets/9a99b5df-0b02-42a5-a154-002eac5d6b0b" />
 <img width="1174" height="121" alt="image" src="https://github.com/user-attachments/assets/e7f27a85-4f63-4f45-bff7-c49fae1ca09d" />
 <img width="1188" height="120" alt="image" src="https://github.com/user-attachments/assets/1ec84a7a-b5bc-424a-b5b9-0aa64ca335db" />

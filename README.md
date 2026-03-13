@@ -16,6 +16,7 @@ Có 1 vài vấn đề lưu ý:
 
 Để tải được những thứ trên cần chuột phải vào Solution như hình dưới:
 <img width="476" height="237" alt="image" src="https://github.com/user-attachments/assets/d7bb8d55-b55e-49f4-8163-92947ae14a35" />
+
 Chọn Manage Nuget Packages for Solution
 <img width="583" height="395" alt="image" src="https://github.com/user-attachments/assets/8dbee4a4-566b-4626-ae12-85dce6a79566" />
 

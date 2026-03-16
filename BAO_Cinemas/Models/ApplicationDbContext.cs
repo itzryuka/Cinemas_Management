@@ -121,7 +121,7 @@ namespace BAO_Cinemas.Models
             modelBuilder.Entity<Booking>().HasData(
                 new Booking { Id = 6, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 50000, BookingTime = DateTime.Parse("2026-03-14T00:46:53"), ShowtimeId = 10, UserId = adminUserId },
                 new Booking { Id = 7, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 75000, BookingTime = DateTime.Parse("2026-03-14T00:52:11"), ShowtimeId = 4, UserId = adminUserId },
-                new Booking { Id = 8, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 100000, BookingTime = DateTime.Parse("2026-03-14T00:54:58"), ShowtimeId = 12, UserId = adminUserId },
+                new Booking { Id = 8, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 100000, BookingTime = DateTime.Parse("2026-03-14T00:54:58"), ShowtimeId = 12, UserId = adminUserId }
             );
         }
     }

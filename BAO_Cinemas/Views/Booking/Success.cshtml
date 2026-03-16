@@ -1,0 +1,119 @@
+﻿@model BAO_Cinemas.Models.Booking
+
+@{
+    ViewData["Title"] = "Đặt Vé Thành Công";
+    // Dữ liệu giờ đây lấy trực tiếp từ Model Booking nên không cần ViewBag hay tính toán thủ công nữa
+}
+
+<style>
+    body {
+        background-color: #141414;
+        color: white;
+    }
+
+    /* Thiết kế form giống 1 tấm vé thật */
+    .ticket-container {
+        background: #1f1f1f;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border: 1px solid #333;
+        position: relative;
+    }
+
+    /* Đường cắt nét đứt giữa thân vé */
+    .ticket-divider {
+        border-top: 2px dashed #444;
+        position: relative;
+        margin: 20px 0;
+    }
+
+        .ticket-divider::before, .ticket-divider::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            width: 30px;
+            height: 30px;
+            background-color: #141414;
+            border-radius: 50%;
+            border: 1px solid #333;
+        }
+
+        .ticket-divider::before {
+            left: -35px;
+            border-left: transparent;
+            border-top: transparent;
+            border-bottom: transparent;
+        }
+
+        .ticket-divider::after {
+            right: -35px;
+            border-right: transparent;
+            border-top: transparent;
+            border-bottom: transparent;
+        }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            <h2 class="text-white mt-3 fw-bold">ĐẶT VÉ THÀNH CÔNG!</h2>
+            <p class="text-secondary">Cảm ơn <strong class="text-info">@Model.CustomerName</strong> đã lựa chọn BAO Cinemas. Vui lòng đưa mã vé này cho nhân viên tại rạp.</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="ticket-container p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="text-danger fw-bold mb-0">BAO CINEMAS</h4>
+                    <span class="badge bg-danger fs-6">VÉ ĐIỆN TỬ</span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-4">
+                        @* Truy cập thông qua Showtime để lấy thông tin phim *@
+                        <img src="@Model.Showtime.Movie.PosterUrl" class="w-100 rounded shadow-sm" alt="Poster" />
+                    </div>
+                    <div class="col-8">
+                        <h5 class="text-warning fw-bold text-uppercase">@Model.Showtime.Movie.Title</h5>
+                        <p class="text-light mb-1"><i class="bi bi-geo-alt"></i> @Model.Showtime.Cinema.Name</p>
+                        <p class="text-light mb-1"><i class="bi bi-door-open"></i> @Model.Showtime.Room.Name</p>
+                        <p class="text-light mb-0"><i class="bi bi-calendar3"></i> @Model.Showtime.StartTime.ToString("HH:mm - dd/MM/yyyy")</p>
+                    </div>
+                </div>
+
+                <div class="ticket-divider"></div>
+
+                <div class="row text-center mb-3">
+                    <div class="col-6 border-end border-secondary">
+                        <small class="text-secondary d-block">GHẾ CỦA BẠN</small>
+                        @* Lấy ghế từ database *@
+                        <h3 class="text-white fw-bold mb-0">@Model.SelectedSeats</h3>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-secondary d-block">TỔNG TIỀN</small>
+                        @* Lấy giá tiền đã lưu trong hóa đơn *@
+                        <h3 class="text-danger fw-bold mb-0">@Model.TotalPrice.ToString("N0")đ</h3>
+                    </div>
+                </div>
+
+                <div class="ticket-divider"></div>
+
+                <div class="text-center mt-4">
+                    @* QR Code chứa ID giao dịch và ghế *@
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BAO-@Model.Id-@Model.SelectedSeats" alt="QR Code" class="bg-white p-2 rounded mb-3" />
+                    <p class="text-secondary small mb-0">Mã hóa đơn: <strong class="text-light">#BAO-@Model.Id</strong></p>
+                    <p class="text-secondary small">Ngày giao dịch: @Model.BookingTime.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light px-5 py-2 fw-bold">
+                    VỀ TRANG CHỦ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

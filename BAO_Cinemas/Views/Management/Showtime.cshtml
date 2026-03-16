@@ -1,0 +1,295 @@
+﻿@model IEnumerable<BAO_Cinemas.Models.Movie>
+
+@{
+    ViewData["Title"] = "Quản lý Lịch Chiếu";
+}
+
+<div class="container-fluid bg-dark text-white p-4 mt-4 rounded shadow">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <h2 class="fw-bold text-warning m-0">
+            <i class="bi bi-camera-reels-fill"></i> Phim Đang Công Chiếu
+        </h2>
+
+        <div>
+            <button type="button" class="btn btn-light fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createShowtimeModal">
+                <i class="bi bi-plus-lg"></i> Tạo Lịch Chiếu Mới
+            </button>
+            <a href="/" class="btn btn-outline-light">
+                <i class="bi bi-arrow-return-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show fw-bold" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show fw-bold" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover table-bordered align-middle text-center">
+            <thead class="table-secondary text-dark">
+                <tr>
+                    <th style="width: 10%;">Poster</th>
+                    <th style="width: 35%;">Tên Phim</th>
+                    <th style="width: 20%;">Ngày khởi chiếu</th>
+                    <th style="width: 15%;">Tổng suất chiếu</th>
+                    <th style="width: 20%;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.PosterUrl" alt="Poster" style="width: 60px; height: 85px; object-fit: cover; border-radius: 4px;" />
+                            </td>
+                            <td class="text-start fw-bold fs-5">
+                                <a asp-action="ShowtimeList" asp-route-movieId="@item.Id" class="text-info text-decoration-none">
+                                    @item.Title
+                                </a>
+                            </td>
+                            <td>@item.ReleaseDate.ToString("dd/MM/yyyy")</td>
+
+                            <td>
+                                <span class="badge bg-success px-3 py-2 fs-6">
+                                    @item.Showtimes.Count suất
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="ShowtimeList" asp-route-movieId="@item.Id" class="btn btn-sm btn-outline-info fw-bold">
+                                        <i class="bi bi-eye"></i> Xem lịch
+                                    </a>
+
+                                    <a asp-action="DeleteAllShowtimes" asp-route-movieId="@item.Id"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ giờ chiếu, rạp chiếu của phim @item.Title. Bạn có chắc chắn không?');"
+                                       title="Ngừng công chiếu phim này">
+                                        <i class="bi bi-x-octagon-fill"></i> Hủy chiếu
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-secondary py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Hiện chưa có bộ phim nào được xếp lịch công chiếu.<br>
+                            Hãy bấm nút <strong>"Tạo Lịch Chiếu Mới"</strong> ở góc trên để bắt đầu!
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="createShowtimeModal" tabindex="-1" aria-labelledby="createShowtimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold text-warning" id="createShowtimeModalLabel"><i class="bi bi-calendar-plus"></i> Tạo Lịch Chiếu Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateShowtime" method="post">
+                <div class="modal-body row">
+
+                    <div class="col-md-7 border-end border-secondary pr-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn Phim <span class="text-danger">*</span></label>
+                            <select name="MovieId" id="movieSelect" class="form-select bg-secondary text-white border-0" required>
+                                <option value="" data-duration="0">-- Chọn phim cần chiếu --</option>
+                                @foreach (var m in ViewBag.AllMovies)
+                                {
+                                    <option value="@m.Id" data-duration="@m.Duration">@m.Title (@m.Duration phút)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn Rạp <span class="text-danger">*</span></label>
+                            <select name="CinemaId" id="cinemaSelect" class="form-select bg-secondary text-white border-0" required>
+                                <option value="">-- Chọn rạp --</option>
+                                @foreach (var c in ViewBag.AllCinemas)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn Phòng <span class="text-danger">*</span></label>
+                            <select name="RoomId" id="roomSelect" class="form-select bg-secondary text-white border-0" required disabled>
+                                <option value="">-- Vui lòng chọn rạp trước --</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Giờ bắt đầu <span class="text-danger">*</span></label>
+                                <input type="text" name="StartTime" id="startTimeInput" class="form-control bg-secondary text-white border-0 flatpickr-datetime" placeholder="Bấm chọn ngày giờ..." required />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Giờ kết thúc <span class="text-danger">*</span></label>
+                                <input type="text" name="EndTime" id="endTimeInput" class="form-control bg-secondary text-white border-0 flatpickr-datetime" placeholder="Bấm chọn ngày giờ..." required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Giá vé (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" name="Price" class="form-control bg-secondary text-white border-0" placeholder="VD: 75000" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-5 pl-3">
+                        <h6 class="fw-bold text-info border-bottom border-secondary pb-2">
+                            <i class="bi bi-clock-history"></i> Các khung giờ đã bận
+                        </h6>
+                        <div class="small text-secondary mb-2">(Đã cộng 15p dọn dẹp)</div>
+
+                        <div id="busyScheduleBox" class="p-2 rounded bg-secondary" style="min-height: 250px; max-height: 300px; overflow-y: auto;">
+                            <div class="text-center text-light mt-4">
+                                Vui lòng chọn <strong>Phòng</strong> và <strong>Giờ bắt đầu</strong> để xem các lịch chiếu hiện tại.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark"><i class="bi bi-check-lg"></i> Xác nhận Xếp Lịch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+
+        <script>
+             $(document).ready(function () {
+
+                 // 1. KHỞI TẠO FLATPICKR CHO 2 Ô NHẬP GIỜ
+                 flatpickr(".flatpickr-datetime", {
+                     enableTime: true,
+                     dateFormat: "Y-m-d H:i",
+                     time_24hr: true,
+                     locale: "vn",
+                     allowInput: true,
+                     onChange: function(selectedDates, dateStr, instance) {
+                         // Nếu Admin chọn Giờ bắt đầu, tự động tính Giờ kết thúc và Check lịch bận
+                         if(instance.element.id === "startTimeInput") {
+                             calculateEndTime(); // GỌI HÀM TÍNH GIỜ
+                             checkBusySchedule();
+                         }
+                     }
+                 });
+
+                 // 2. HÀM TỰ ĐỘNG TÍNH GIỜ KẾT THÚC (THỜI LƯỢNG + 15P)
+                 function calculateEndTime() {
+                     // Lấy thời lượng phim từ thuộc tính data-duration của Option đang chọn
+                     var duration = parseInt($('#movieSelect').find(':selected').data('duration')) || 0;
+
+                     // Lấy bộ chọn Flatpickr của Giờ bắt đầu và Giờ kết thúc
+                     var startPicker = document.querySelector("#startTimeInput")._flatpickr;
+                     var endPicker = document.querySelector("#endTimeInput")._flatpickr;
+
+                     // Nếu đã chọn phim (có thời lượng) và đã chọn giờ bắt đầu
+                     if (duration > 0 && startPicker.selectedDates.length > 0) {
+                         // Tạo một bản sao của giờ bắt đầu
+                         var startDate = new Date(startPicker.selectedDates[0]);
+
+                         // Cộng số phút: Thời lượng phim + 15 phút dọn dẹp
+                         startDate.setMinutes(startDate.getMinutes() + duration + 15);
+
+                         // Tự động điền kết quả vào ô Giờ kết thúc
+                         endPicker.setDate(startDate);
+                     }
+                 }
+
+                 // 3. NẾU ADMIN ĐỔI PHIM KHÁC -> TÍNH LẠI GIỜ KẾT THÚC
+                 $('#movieSelect').change(function() {
+                     calculateEndTime();
+                 });
+
+                 // 4. CHỌN RẠP -> TẢI PHÒNG
+                 $('#cinemaSelect').change(function () {
+                     var cinemaId = $(this).val();
+                     var roomSelect = $('#roomSelect');
+
+                     roomSelect.empty().append('<option value="">-- Chọn phòng --</option>');
+
+                     if (cinemaId) {
+                         $.getJSON('/Management/GetRoomsByCinema?cinemaId=' + cinemaId, function (data) {
+                             $.each(data, function (index, room) {
+                                 roomSelect.append('<option value="' + room.id + '">' + room.name + '</option>');
+                             });
+                             roomSelect.prop('disabled', false);
+                         });
+                     } else {
+                         roomSelect.prop('disabled', true);
+                     }
+                     checkBusySchedule();
+                 });
+
+                 // 5. CHỌN PHÒNG -> CHECK LỊCH BẬN
+                 $('#roomSelect').change(function () {
+                     checkBusySchedule();
+                 });
+
+                 // 6. HÀM CHECK LỊCH BẬN TỪ HÔM NAY TRỞ ĐI
+                 function checkBusySchedule() {
+                     var roomId = $('#roomSelect').val();
+                     var startTime = $('#startTimeInput').val();
+                     var scheduleBox = $('#busyScheduleBox');
+
+                     if (roomId) {
+                         var dateOnly = "";
+                         if (startTime) {
+                             dateOnly = startTime.split(' ')[0];
+                         }
+
+                         scheduleBox.html('<div class="text-center mt-4"><div class="spinner-border text-info" role="status"></div><p>Đang tải lịch...</p></div>');
+
+                         $.getJSON('/Management/GetBusySchedules?roomId=' + roomId + '&date=' + dateOnly, function (data) {
+                             scheduleBox.empty();
+                             if (data.length > 0) {
+                                 $.each(data, function (index, item) {
+                                     var html = `<div class="alert alert-danger p-2 mb-2 small fw-bold">
+                                                     <i class="bi bi-calendar-x"></i> ${item.date} | ${item.start} - ${item.end}<br>
+                                                     <span class="text-dark fw-normal">Phim: ${item.title}</span>
+                                                 </div>`;
+                                     scheduleBox.append(html);
+                                 });
+                             } else {
+                                 scheduleBox.html('<div class="alert alert-success p-2 small fw-bold"><i class="bi bi-check-circle-fill"></i> Phòng này hiện đang trống lịch! Bạn có thể xếp thoải mái.</div>');
+                             }
+                         });
+                     } else {
+                         scheduleBox.html('<div class="text-center text-light mt-4">Vui lòng chọn <strong>Phòng</strong> để xem các lịch chiếu hiện tại.</div>');
+                     }
+                 }
+             });
+    </script>
+}

@@ -1,0 +1,255 @@
+﻿@model IEnumerable<BAO_Cinemas.Models.Movie>
+
+@{
+    ViewData["Title"] = "Trang Chủ";
+
+    // Lấy ngày hiện tại (chỉ lấy phần ngày, bỏ qua giờ phút) để so sánh cho chuẩn
+    var today = DateTime.Today;
+
+    // 1. ĐANG CHIẾU: Cứ phim nào ĐANG CÓ lịch chiếu từ hôm nay trở đi thì tự động hiển thị ở đây.
+    var nowShowingMovies = Model.Where(m => m.Showtimes != null && m.Showtimes.Any(s => s.StartTime.Date >= today))
+                                .OrderByDescending(m => m.ReleaseDate)
+                                .ToList();
+
+    // 2. SẮP CHIẾU (LUẬT THÉP):
+    // - BẮT BUỘC CategoryId PHẢI BẰNG 2.
+    // - VÀ phim đó hiện tại CHƯA ĐƯỢC XẾP LỊCH CHIẾU (nếu xếp rồi thì nó tự nhảy sang tab Đang Chiếu ở trên rồi).
+    var comingSoonMovies = Model.Where(m => m.CategoryId == 2 &&
+                                           (m.Showtimes == null || !m.Showtimes.Any(s => s.StartTime.Date >= today)))
+                                .OrderBy(m => m.ReleaseDate)
+                                .ToList();
+}
+
+<style>
+    .banner-img {
+        height: 500px;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .carousel-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+    }
+
+    .carousel-item {
+        transition: transform 0.8s ease-in-out;
+    }
+
+    /* CSS nhỏ giọt cho cái nhãn IMAX tự động */
+    .imax-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(45deg, #f39c12, #e67e22);
+        color: #000;
+        font-weight: 900;
+        padding: 5px 12px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        z-index: 10;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div id="heroBanner" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroBanner" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#heroBanner" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#heroBanner" data-bs-slide-to="2"></button>
+    </div>
+
+    <div class="carousel-inner" style="border-radius: 15px; overflow: hidden;">
+        <div class="carousel-item active">
+            <img src="~/images/banners/Banner_1.jpg" class="d-block w-100 banner-img" alt="Banner 1">
+        </div>
+        <div class="carousel-item">
+            <img src="~/images/banners/Banner_2.jpg" class="d-block w-100 banner-img" alt="Banner 2">
+        </div>
+        <div class="carousel-item">
+            <img src="~/images/banners/Banner_3.jpg" class="d-block w-100 banner-img" alt="Banner 3">
+        </div>
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroBanner" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroBanner" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<ul class="nav nav-pills justify-content-center mb-5 mt-5" id="movieTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold fs-5 px-4 rounded-pill" id="now-showing-tab" data-bs-toggle="tab" data-bs-target="#now-showing" type="button" role="tab">
+            ĐANG CHIẾU
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold fs-5 px-4 rounded-pill ms-3" id="coming-soon-tab" data-bs-toggle="tab" data-bs-target="#coming-soon" type="button" role="tab">
+            SẮP CHIẾU
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content mt-3">
+
+    <div class="tab-pane fade show active" id="now-showing">
+        <div class="row">
+            @foreach (var item in nowShowingMovies)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="movie-card custom-hover-card position-relative">
+
+                        <img src="@item.PosterUrl" class="movie-poster" alt="@item.Title" />
+
+                        @if (item.Showtimes.Any(s => s.Room != null && s.Room.Name.ToUpper().Contains("IMAX")))
+                        {
+                            <span class="imax-badge">IMAX</span>
+                        }
+
+                        <div class="movie-overlay">
+                            <div class="overlay-content">
+                                <h5 class="movie-title">@item.Title</h5>
+                                <p class="movie-meta">
+                                    <span>@item.Genre</span><br>
+                                    <span>@item.Duration phút</span><br>
+                                    <span>Khởi chiếu: @item.ReleaseDate.ToString("dd/MM/yyyy")</span>
+                                </p>
+
+                                <button class="btn btn-outline-light w-100 fw-bold"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#bookingModal-@item.Id">
+                                    Đặt vé
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="bookingModal-@item.Id" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content" style="background-color: #1f1f1f; color: white;">
+                            <div class="modal-header border-bottom border-secondary">
+                                <h5 class="modal-title fw-bold text-uppercase text-warning">@item.Title - Mua Vé</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                @{
+                                    string[] dayNames = { "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy" };
+                                }
+
+                                <ul class="nav nav-pills date-pills d-flex gap-2 overflow-auto mb-4 pb-3 border-bottom border-secondary flex-nowrap" role="tablist" style="scrollbar-width: none;">
+                                    @for (int i = 0; i < 7; i++)
+                                    {
+                                        var date = today.AddDays(i);
+                                        var isFirst = (i == 0);
+                                        string displayDay = isFirst ? "Hôm nay" : dayNames[(int)date.DayOfWeek];
+
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link @(isFirst ? "active" : "") text-center px-4 py-2"
+                                                    data-bs-toggle="pill"
+                                                    data-bs-target="#content-@item.Id-day-@i"
+                                                    type="button" role="tab"
+                                                    style="border-radius: 8px; border: 1px solid #555; white-space: nowrap;">
+                                                <span class="d-block fw-bold" style="font-size: 15px;">@displayDay</span>
+                                                <small style="font-size: 12px;">@date.ToString("dd/MM")</small>
+                                            </button>
+                                        </li>
+                                    }
+                                </ul>
+
+                                <div class="tab-content">
+                                    @for (int i = 0; i < 7; i++)
+                                    {
+                                        var date = today.AddDays(i);
+                                        var isFirst = (i == 0);
+
+                                        <div class="tab-pane fade @(isFirst ? "show active" : "")" id="content-@item.Id-day-@i" role="tabpanel">
+                                            @{
+                                                var showtimesForDay = item.Showtimes?
+                                                .Where(s => s.StartTime.Date == date.Date)
+                                                .OrderBy(s => s.StartTime)
+                                                .ToList() ?? new List<BAO_Cinemas.Models.Showtime>();
+                                            }
+
+                                            @if (showtimesForDay.Any())
+                                            {
+                                                var groupedByCinema = showtimesForDay.GroupBy(s => s.Cinema);
+                                                <div class="cinema-list text-start">
+                                                    @foreach (var cinemaGroup in groupedByCinema)
+                                                    {
+                                                        <div class="mb-4">
+                                                            <h6 class="fw-bold text-light border-start border-danger border-4 ps-2 mb-3">
+                                                                @cinemaGroup.Key.Name
+                                                            </h6>
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                @foreach (var show in cinemaGroup)
+                                                                {
+                                                                    <a asp-controller="Booking" asp-action="SeatSelection" asp-route-id="@show.Id" class="btn btn-outline-light text-center">
+                                                                        <span class="d-block fw-bold fs-5">@show.StartTime.ToString("HH:mm")</span>
+                                                                        <small class="text-warning">@show.Room.Name</small>
+                                                                    </a>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center py-5">
+                                                    <i class="fs-1 text-secondary mb-3">🎬</i>
+                                                    <p class="text-secondary mb-0">Chưa có lịch chiếu cho ngày @date.ToString("dd/MM/yyyy")</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="coming-soon">
+        <div class="row">
+            @foreach (var item in comingSoonMovies)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="movie-card custom-hover-card">
+                        <img src="@item.PosterUrl" class="movie-poster" alt="@item.Title" />
+                        <div class="movie-overlay" style="background: rgba(0,0,0,0.8);">
+                            <div class="overlay-content">
+                                <h5 class="movie-title">@item.Title</h5>
+                                <p class="movie-meta text-secondary">
+                                    <span>@item.Genre</span><br>
+                                    <span>@item.Duration phút</span><br>
+                                    <span class="text-warning fw-bold mt-2 d-block">Khởi chiếu: @item.ReleaseDate.ToString("dd/MM/yyyy")</span>
+                                </p>
+                                <button class="btn btn-secondary w-100 mt-3" disabled>Sắp ra mắt</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var myCarousel = document.querySelector('#heroBanner')
+    var carousel = new bootstrap.Carousel(myCarousel, {
+      interval: 5000,
+      wrap: true,
+      pause: 'hover'
+    })
+</script>

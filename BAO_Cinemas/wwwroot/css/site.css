@@ -1,0 +1,187 @@
+﻿body {
+    background-color: #141414;
+    color: white;
+    padding: 70px;
+}
+
+/* banner */
+
+.hero-banner img {
+    height: 500px;
+    object-fit: cover;
+}
+
+/* title */
+.section-title {
+    color: #f3f6f4;
+    margin-bottom: 20px;
+}
+.text-color {
+    color: White;
+}
+.navbar-nav .nav-link:hover,
+.navbar-brand:hover {
+    color: Gray !important;
+    text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    transition: color 0.2s ease-in-out;
+}
+.navbar-blur {
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+.navbar-nav .nav-link.show,
+.navbar-nav .nav-link:focus,
+.navbar-nav .nav-link:active {
+    color: white !important;
+}
+.dropdown-menu {
+    background-color: #222;
+}
+.dropdown-item {
+    color: white;
+}
+    .dropdown-item:hover {
+        background-color: #bcbcbc;
+        color: White;
+    }
+
+.search-box {
+    margin-left: 50px;
+    width: 230px;
+}
+    .search-box input {
+        background: White;
+        border: 1px solid white;
+        color: white;
+    }
+    .search-box button {
+        padding: 0 10px;
+    }
+
+.modal-backdrop.show {
+    backdrop-filter: blur(5px);
+    background-color: rgba(0,0,0,0.6);
+}
+
+.s1 {
+    padding-right: 30px;
+}
+.btn-color {
+    background-color: white;
+    color: black;
+}
+.btn-color:hover {
+    border : 1px solid white;
+    color: white;
+}
+.btn-outline-color {
+    border: 1px solid white;
+    color: white;
+}
+    .btn-outline-color:hover {
+        background-color: white;
+        color: black;
+    }
+
+
+.movie-card {
+    border-radius: 10px;
+    overflow: hidden; /* Cắt bỏ những phần thừa ra ngoài bo góc */
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    position: relative; /* Quan trọng: Làm mỏ neo để lớp overlay đè lên trên */
+    aspect-ratio: 2 / 3; /* Ép card luôn hiển thị đúng tỉ lệ vàng của poster phim */
+    background: transparent; /* Xóa nền xám đi vì giờ toàn bộ thẻ là ảnh */
+}
+
+    .movie-card:hover {
+        transform: scale(1.05); /* Phóng to nhẹ khi trỏ chuột */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+    }
+
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Đảm bảo ảnh luôn tràn đầy khung hình */
+    display: block;
+}
+
+/* Đây là lớp phủ đè lên ảnh (đã sửa đúng tên class) */
+.movie-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Nền đen mờ 85% */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Căn giữa dọc */
+    align-items: center; /* Căn giữa ngang */
+    padding: 20px;
+    text-align: center;
+    /* Hiệu ứng ẩn và trượt - ĐÂY LÀ PHẦN LÀM NÓ BIẾN MẤT LÚC BÌNH THƯỜNG */
+    opacity: 0; /* Trong suốt hoàn toàn */
+    transform: translateY(30px); /* Đẩy tụt xuống 30px */
+    transition: all 0.4s ease;
+}
+
+/* KHI TRỎ CHUỘT VÀO (.movie-card:hover) THÌ HIỆN (.movie-overlay) LÊN */
+.movie-card:hover .movie-overlay {
+    opacity: 1; /* Hiển thị rõ ràng */
+    transform: translateY(0); /* Trượt khớp vào giữa */
+}
+
+/* Chỉnh lại font chữ cho nổi bật trên nền đen */
+.movie-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.movie-meta {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 25px;
+    line-height: 1.8;
+}
+
+
+/* --- HIỆU ỨNG CHO TAB CHỌN NGÀY TRONG POPUP --- */
+.date-pills .nav-link {
+    color: white;
+    background-color: transparent;
+    transition: 0.3s ease;
+}
+
+    .date-pills .nav-link:hover {
+        border-color: #fff !important;
+    }
+
+    .date-pills .nav-link.active {
+        background-color: #dc3545 !important; /* Màu đỏ */
+        color: white !important;
+        border-color: #dc3545 !important;
+    }
+
+/* BANNER SLIDE */
+.banner-img {
+    height: 500px; /* Độ cao banner */
+    object-fit: cover; /* Giúp ảnh luôn đẹp dù kích thước file ảnh gốc ra sao */
+    object-position: center;
+}
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+}
+
+.carousel-item {
+    transition: transform 0.8s ease-in-out; /* Tốc độ lướt sang trái (0.8 giây) */
+}

@@ -15,6 +15,8 @@ Chọn file BAO_Cinemas:
 
 chỉnh sửa đoạn <TargetFramework>net9.0</TargetFramework> thành <TargetFramework>net10.0</TargetFramework>
 
+Và các phần Version="9.0.14" hay 9.0.5 thành 10.0 hết để có thể cập nhập thành công
+
 và Chuột phải vào Solution 'BAO_Cinemas' -> chọn Manage NuGet Packages for Solution và update hết packages
 
 Sau đó thì thực hiện bước dưới

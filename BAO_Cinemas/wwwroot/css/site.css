@@ -3,7 +3,9 @@
     color: white;
     padding: 70px;
 }
-
+.logo {
+    padding-right: 20px;
+}
 /* banner */
 
 .hero-banner img {

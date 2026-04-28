@@ -1,4 +1,4 @@
-﻿@model BAO_Cinemas.Models.Booking
+﻿@model Booking
 
 @{
     ViewData["Title"] = "Đặt Vé Thành Công";
@@ -59,7 +59,6 @@
         <div class="col-md-6 text-center mb-4">
             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
             <h2 class="text-white mt-3 fw-bold">ĐẶT VÉ THÀNH CÔNG!</h2>
-            <p class="text-secondary">Cảm ơn <strong class="text-info">@Model.CustomerName</strong> đã lựa chọn BAO Cinemas. Vui lòng đưa mã vé này cho nhân viên tại rạp.</p>
         </div>
     </div>
 
@@ -90,7 +89,6 @@
                     <div class="col-6 border-end border-secondary">
                         <small class="text-secondary d-block">GHẾ CỦA BẠN</small>
                         @* Lấy ghế từ database *@
-                        <h3 class="text-white fw-bold mb-0">@Model.SelectedSeats</h3>
                     </div>
                     <div class="col-6">
                         <small class="text-secondary d-block">TỔNG TIỀN</small>
@@ -103,7 +101,6 @@
 
                 <div class="text-center mt-4">
                     @* QR Code chứa ID giao dịch và ghế *@
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BAO-@Model.Id-@Model.SelectedSeats" alt="QR Code" class="bg-white p-2 rounded mb-3" />
                     <p class="text-secondary small mb-0">Mã hóa đơn: <strong class="text-light">#BAO-@Model.Id</strong></p>
                     <p class="text-secondary small">Ngày giao dịch: @Model.BookingTime.ToString("dd/MM/yyyy HH:mm")</p>
                 </div>

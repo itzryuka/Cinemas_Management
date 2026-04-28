@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Chọn Ghế - " + Model.Movie.Title;
-    var bookedSeats = Model.BookedSeats?.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+    var bookedSeats = ViewBag.BookedSeatCodes as List<string> ?? new List<string>();
     var rows = new[] { "A", "B", "C", "D", "E", "F", "G" };
 }
 

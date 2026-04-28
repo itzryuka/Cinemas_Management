@@ -22,16 +22,17 @@ namespace BAO_Cinemas.Controllers
         public IActionResult SeatSelection(int id)
         {
             var showtime = _context.Showtimes
-                .Include(s => s.Movie)
-                .Include(s => s.Cinema)
-                .Include(s => s.Room)
+                .Include(s => s.Movie).Include(s => s.Cinema).Include(s => s.Room)
                 .FirstOrDefault(s => s.Id == id);
+            if (showtime == null) return NotFound();
 
-            if (showtime == null)
-            {
-                return NotFound("Không tìm thấy suất chiếu này!");
-            }
+            // Lấy danh sách ghế đã đặt từ BookingSeats thay vì BookedSeats string
+            var bookedSeatCodes = _context.BookingSeats
+                .Where(bs => bs.ShowtimeId == id && bs.Status == "confirmed")
+                .Select(bs => bs.Seat.SeatCode)
+                .ToList();
 
+            ViewBag.BookedSeatCodes = bookedSeatCodes;
             return View(showtime);
         }
 
@@ -39,59 +40,65 @@ namespace BAO_Cinemas.Controllers
         // NHẬN DỮ LIỆU ĐẶT VÉ VÀ LƯU VÀO DATABASE (LUỒNG SIÊU TỐC)
         // =========================================================
         [HttpPost]
-        // Đã xóa 2 tham số: customerName và customerPhone
         public IActionResult ConfirmBooking(int showtimeId, string selectedSeats)
         {
             if (string.IsNullOrEmpty(selectedSeats))
                 return RedirectToAction("SeatSelection", new { id = showtimeId });
 
-            var showtime = _context.Showtimes.FirstOrDefault(s => s.Id == showtimeId);
+            var showtime = _context.Showtimes.Include(s => s.Room).FirstOrDefault(s => s.Id == showtimeId);
             if (showtime == null) return NotFound();
 
-            // 1. Kiểm tra trùng ghế (Logic bảo mật)
-            var newSeats = selectedSeats.Split(',');
-            var currentBooked = string.IsNullOrEmpty(showtime.BookedSeats)
-                ? new List<string>()
-                : showtime.BookedSeats.Split(',').ToList();
+            var requestedSeatCodes = selectedSeats.Split(',').Select(s => s.Trim()).ToList();
 
-            foreach (var seat in newSeats)
-            {
-                if (currentBooked.Contains(seat))
-                    return Content($"Rất tiếc, ghế {seat} đã có người mua mất rồi!");
-            }
+            // 1. Lấy SeatId từ SeatCode (tra bảng Seats)
+            var seats = _context.Seats
+                .Where(s => s.RoomId == showtime.RoomId && requestedSeatCodes.Contains(s.SeatCode) && s.Status == "active")
+                .ToList();
 
-            // 2. TẠO HÓA ĐƠN (BOOKING)
+            if (seats.Count != requestedSeatCodes.Count)
+                return Content("Một hoặc nhiều ghế không hợp lệ!");
+
+            // 2. Kiểm tra xung đột (dùng DB thay vì cắt chuỗi)
+            var seatIds = seats.Select(s => s.Id).ToList();
+            var conflicted = _context.BookingSeats
+                .Where(bs => bs.ShowtimeId == showtimeId
+                          && bs.Status == "confirmed"
+                          && seatIds.Contains(bs.SeatId))
+                .Select(bs => bs.Seat.SeatCode)
+                .ToList();
+
+            if (conflicted.Any())
+                return Content($"Rất tiếc, ghế {string.Join(", ", conflicted)} đã có người đặt!");
+
+            // 3. Tạo Booking
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var booking = new Booking
             {
                 ShowtimeId = showtimeId,
-
-                // Tự động lấy Email đăng nhập gán vào tên khách hàng
-                CustomerName = User.Identity.Name ?? "Khách hàng",
-
-                // Điền cứng "Không yêu cầu" cho SĐT vì đã bỏ ô nhập liệu
-                CustomerPhone = "Không yêu cầu",
-
-                // Lấy UserId (nếu bạn đã thêm cột UserId vào bảng Booking như hướng dẫn)
-                UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-
-                SelectedSeats = selectedSeats,
-                TotalPrice = newSeats.Length * showtime.Price,
-                BookingTime = DateTime.Now
+                UserId = userId,
+                TotalPrice = seats.Count * showtime.Price,
+                BookingTime = DateTime.Now,
+                Status = "confirmed"
             };
-
             _context.Bookings.Add(booking);
+            _context.SaveChanges(); // SaveChanges lần 1 để có BookingId
 
-            // 3. CẬP NHẬT GHẾ ĐÃ BÁN TRONG SHOWTIME
-            if (string.IsNullOrEmpty(showtime.BookedSeats))
-                showtime.BookedSeats = selectedSeats;
-            else
-                showtime.BookedSeats += "," + selectedSeats;
+            // 4. Insert BookingSeats (mỗi ghế = 1 dòng)
+            var bookingSeats = seats.Select(seat => new BookingSeat
+            {
+                BookingId = booking.Id,
+                SeatId = seat.Id,
+                ShowtimeId = showtimeId,
+                Status = "confirmed"
+            }).ToList();
 
+            _context.BookingSeats.AddRange(bookingSeats);
             _context.SaveChanges();
 
-            // 4. CHUYỂN HƯỚNG SANG TRANG VÉ THÀNH CÔNG
             return RedirectToAction("Success", new { bookingId = booking.Id });
         }
+
+
 
         // =========================================================
         // TRANG HIỂN THỊ VÉ ĐIỆN TỬ

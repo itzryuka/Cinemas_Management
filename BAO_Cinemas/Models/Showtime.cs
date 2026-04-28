@@ -19,7 +19,7 @@ namespace BAO_Cinemas.Models
 
         // Lưu danh sách các ghế đã được đặt, cách nhau bằng dấu phẩy. VD: "A1,A2,C5"
         // Mặc định lúc mới tạo suất chiếu là chuỗi rỗng (chưa ai đặt)
-        public string BookedSeats { get; set; } = "";
+        public string Status { get; set; } = "scheduled";
 
         // Khóa ngoại: Suất chiếu này chiếu Phim gì?
         public int MovieId { get; set; }
@@ -35,5 +35,6 @@ namespace BAO_Cinemas.Models
         public int CinemaId { get; set; }
         [ForeignKey("CinemaId")]
         public Cinema Cinema { get; set; }
+        public ICollection<BookingSeat> BookingSeats { get; set; }
     }
 }

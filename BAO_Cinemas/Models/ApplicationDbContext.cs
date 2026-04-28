@@ -17,6 +17,8 @@ namespace BAO_Cinemas.Models
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Showtime> Showtimes { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Seat> Seats { get; set; }
+        public DbSet<BookingSeat> BookingSeats { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +57,18 @@ namespace BAO_Cinemas.Models
                 UserId = adminUserId
             });
 
+            // UNIQUE constraint: 1 ghế chỉ đặt 1 lần trong 1 suất
+            modelBuilder.Entity<BookingSeat>()
+                .HasIndex(bs => new { bs.SeatId, bs.ShowtimeId })
+                .IsUnique();
+
+            // Quan hệ BookingSeat → Showtime (không cascade để tránh conflict)
+            modelBuilder.Entity<BookingSeat>()
+                .HasOne(bs => bs.Showtime)
+                .WithMany(s => s.BookingSeats)
+                .HasForeignKey(bs => bs.ShowtimeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // --- THÊM ĐOẠN CODE NÀY ĐỂ FIX LỖI CASCADE PATH ---
             modelBuilder.Entity<Showtime>()
                 .HasOne(s => s.Room)
@@ -79,12 +93,6 @@ namespace BAO_Cinemas.Models
                 new Cinema { Id = 4, Name = "BAO Cinemas Hà Đông", Address = "Ngõ 3, Phố Xốm, Hà Đông", Hotline = "1900 3667" }
             );
 
-            // 2. SEED ROOM (PHÒNG CHIẾU)
-            modelBuilder.Entity<Room>().HasData(
-                new Room { Id = 1, Name = "Phòng 1 - Standard", TotalSeats = 98, CinemaId = 1, Status = 1 },
-                new Room { Id = 2, Name = "Phòng 2 - IMAX", TotalSeats = 98, CinemaId = 1, Status = 1 },
-                new Room { Id = 3, Name = "Phòng 1 - Standard", TotalSeats = 98, CinemaId = 2, Status = 1 }
-            );
 
             // 3. SEED MOVIE (DANH SÁCH PHIM)
             modelBuilder.Entity<Movie>().HasData(
@@ -105,24 +113,6 @@ namespace BAO_Cinemas.Models
                 new Movie { Id = 18, Title = "Titanic", Genre = "Lãng mạn, Tâm lý", Duration = 194, ReleaseDate = new DateTime(1997, 12, 19), PosterUrl = "/images/posters/5534399c-a8ea-423e-a3ff-fe48c137c945_Titanic.jpg", CategoryId = 0 }
             );
 
-            // 4. SEED SHOWTIME (SUẤT CHIẾU)
-            modelBuilder.Entity<Showtime>().HasData(
-                new Showtime { Id = 1, MovieId = 1, CinemaId = 1, RoomId = 1, StartTime = new DateTime(2026, 3, 13, 10, 30, 0), EndTime = new DateTime(2026, 3, 13, 13, 30, 0), Price = 75000, BookedSeats = "" },
-                new Showtime { Id = 2, MovieId = 1, CinemaId = 1, RoomId = 2, StartTime = new DateTime(2026, 3, 13, 14, 0, 0), EndTime = new DateTime(2026, 3, 13, 17, 0, 0), Price = 90000, BookedSeats = "" },
-                new Showtime { Id = 3, MovieId = 1, CinemaId = 2, RoomId = 3, StartTime = new DateTime(2026, 3, 13, 19, 45, 0), EndTime = new DateTime(2026, 3, 13, 22, 45, 0), Price = 100000, BookedSeats = "" },
-                new Showtime { Id = 4, MovieId = 1, CinemaId = 2, RoomId = 3, StartTime = new DateTime(2026, 3, 14, 09, 0, 0), EndTime = new DateTime(2026, 3, 14, 12, 0, 0), Price = 75000, BookedSeats = "A1" },
-                new Showtime { Id = 10, MovieId = 2, CinemaId = 1, RoomId = 1, StartTime = new DateTime(2026, 3, 18, 06, 0, 0), EndTime = new DateTime(2026, 3, 18, 08, 43, 0), Price = 50000, BookedSeats = "A1" },
-                new Showtime { Id = 11, MovieId = 17, CinemaId = 1, RoomId = 1, StartTime = new DateTime(2026, 3, 18, 09, 0, 0), EndTime = new DateTime(2026, 3, 18, 11, 26, 0), Price = 80000, BookedSeats = "" },
-                new Showtime { Id = 12, MovieId = 17, CinemaId = 1, RoomId = 2, StartTime = new DateTime(2026, 3, 18, 06, 0, 0), EndTime = new DateTime(2026, 3, 18, 08, 26, 0), Price = 100000, BookedSeats = "A1" },
-                new Showtime { Id = 13, MovieId = 18, CinemaId = 2, RoomId = 3, StartTime = new DateTime(2026, 3, 18, 06, 0, 0), EndTime = new DateTime(2026, 3, 18, 09, 29, 0), Price = 75000, BookedSeats = "E8" }
-            );
-
-            // 5. SEED BOOKING (LỊCH SỬ ĐẶT VÉ/DOANH THU)
-            modelBuilder.Entity<Booking>().HasData(
-                new Booking { Id = 6, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 50000, BookingTime = DateTime.Parse("2026-03-14T00:46:53"), ShowtimeId = 10, UserId = adminUserId },
-                new Booking { Id = 7, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 75000, BookingTime = DateTime.Parse("2026-03-14T00:52:11"), ShowtimeId = 4, UserId = adminUserId },
-                new Booking { Id = 8, CustomerName = "admin@baocinemas.com", CustomerPhone = "Không yêu cầu", SelectedSeats = "A1", TotalPrice = 100000, BookingTime = DateTime.Parse("2026-03-14T00:54:58"), ShowtimeId = 12, UserId = adminUserId }
-            );
         }
     }
 }
